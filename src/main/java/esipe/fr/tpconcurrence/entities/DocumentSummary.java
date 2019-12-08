@@ -1,41 +1,42 @@
 package esipe.fr.tpconcurrence.entities;
 
-import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @ApiModel(description = "résumé d'un document")
-@Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2019-12-06T14:36:05.755Z")
-
 public class DocumentSummary   {
-  @JsonProperty("documentId")
+  @Id
+  @JsonIgnore
+  private String id;
+
+  @Version
+  @NotNull
+  @JsonIgnore
+  private String version;
+
   private String documentId = null;
 
-  @JsonProperty("created")
-  private String created = null;
+  private LocalDateTime created = null;
 
-  @JsonProperty("updated")
-  private String updated = null;
+  private LocalDateTime updated = null;
 
-  @JsonProperty("title")
   private String title = null;
 
-  public DocumentSummary documentId(String documentId) {
+  public DocumentSummary(String documentId, LocalDateTime created, LocalDateTime updated, String title) {
     this.documentId = documentId;
-    return this;
+    this.created = created;
+    this.updated = updated;
+    this.title = title;
   }
 
-  /**
-   * identifiant du document
-   * @return documentId
-  **/
-  @ApiModelProperty(value = "identifiant du document")
-
+  public DocumentSummary() {
+  }
 
   public String getDocumentId() {
     return documentId;
@@ -45,59 +46,22 @@ public class DocumentSummary   {
     this.documentId = documentId;
   }
 
-  public DocumentSummary created(String created) {
-    this.created = created;
-    return this;
-  }
 
-  /**
-   * la date de création
-   * @return created
-  **/
-  @ApiModelProperty(value = "la date de création")
-
-  @Valid
-
-  public String getCreated() {
+  public LocalDateTime getCreated() {
     return created;
   }
 
-  public void setCreated(String created) {
+  public void setCreated(LocalDateTime created) {
     this.created = created;
   }
 
-  public DocumentSummary updated(String updated) {
-    this.updated = updated;
-    return this;
-  }
-
-  /**
-   * date de la mise à jour
-   * @return updated
-  **/
-  @ApiModelProperty(value = "date de la mise à jour")
-
-  @Valid
-
-  public String getUpdated() {
+  public LocalDateTime getUpdated() {
     return updated;
   }
 
-  public void setUpdated(String updated) {
+  public void setUpdated(LocalDateTime updated) {
     this.updated = updated;
   }
-
-  public DocumentSummary title(String title) {
-    this.title = title;
-    return this;
-  }
-
-  /**
-   * titre du document
-   * @return title
-  **/
-  @ApiModelProperty(value = "titre du document")
-
 
   public String getTitle() {
     return title;
@@ -107,49 +71,20 @@ public class DocumentSummary   {
     this.title = title;
   }
 
-
-  @Override
-  public boolean equals(java.lang.Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    DocumentSummary documentSummary = (DocumentSummary) o;
-    return Objects.equals(this.documentId, documentSummary.documentId) &&
-        Objects.equals(this.created, documentSummary.created) &&
-        Objects.equals(this.updated, documentSummary.updated) &&
-        Objects.equals(this.title, documentSummary.title);
+  public String getId() {
+    return id;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(documentId, created, updated, title);
+  public void setId(String id) {
+    this.id = id;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class DocumentSummary {\n");
-    
-    sb.append("    documentId: ").append(toIndentedString(documentId)).append("\n");
-    sb.append("    created: ").append(toIndentedString(created)).append("\n");
-    sb.append("    updated: ").append(toIndentedString(updated)).append("\n");
-    sb.append("    title: ").append(toIndentedString(title)).append("\n");
-    sb.append("}");
-    return sb.toString();
+  public String getVersion() {
+    return version;
   }
 
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(java.lang.Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
+  public void setVersion(String version) {
+    this.version = version;
   }
 }
 

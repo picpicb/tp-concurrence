@@ -20,7 +20,7 @@ import java.io.IOException;
 
 @Api(tags = "locks")
 @Controller
-public class LocksApiController implements LocksApi{
+public class LocksApiController{
 
     private static final Logger log = LoggerFactory.getLogger(DocumentsApiController.class);
 
@@ -33,7 +33,7 @@ public class LocksApiController implements LocksApi{
         this.objectMapper = objectMapper;
         this.request = request;
     }
-
+/*
     @ApiOperation(value = "pose un verrou sur le document", nickname = "documentsDocumentIdLockPut", notes = "l'utilisateur peut poser un verrou si aucun n'autre n'est posé ", response = Lock.class, tags={ "locks", })
     public ResponseEntity<Lock> documentsDocumentIdLockPut(@ApiParam(value = "identifiant du document",required=true) @PathVariable("documentId") String documentId, @ApiParam(value = "l'objet verrou posé"  )  @Valid @RequestBody Lock lock) {
         String accept = request.getHeader("Accept");
@@ -70,5 +70,5 @@ public class LocksApiController implements LocksApi{
         }
 
         return new ResponseEntity<Lock>(HttpStatus.NOT_IMPLEMENTED);
-    }
+    }*/
 }

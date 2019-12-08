@@ -1,103 +1,79 @@
 package esipe.fr.tpconcurrence.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import esipe.fr.tpconcurrence.entities.Document;
-import esipe.fr.tpconcurrence.entities.DocumentsList;
-import esipe.fr.tpconcurrence.entities.Lock;
+import esipe.fr.tpconcurrence.entities.*;
+import esipe.fr.tpconcurrence.exceptions.ApiException;
+import esipe.fr.tpconcurrence.services.DocumentService;
 import io.swagger.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import springfox.documentation.annotations.ApiIgnore;
-
+import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Api(tags = "documents")
 @Controller
-public class DocumentsApiController implements DocumentsApi {
+public class DocumentsApiController {
 
-    private static final Logger log = LoggerFactory.getLogger(DocumentsApiController.class);
+    @Autowired
+    DocumentService documentService;
 
-    private final ObjectMapper objectMapper;
-
-    private final HttpServletRequest request;
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public DocumentsApiController(ObjectMapper objectMapper, HttpServletRequest request) {
-        this.objectMapper = objectMapper;
-        this.request = request;
-    }
     @ApiOperation(value = "lis le document", nickname = "documentsDocumentIdGet", notes = "retourne un document", response = Document.class, tags={ "documents", })
-    public ResponseEntity<Document> documentsDocumentIdGet(@ApiParam(value = "identifiant du document",required=true) @PathVariable("documentId") String documentId) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<Document>(objectMapper.readValue("\"\"", Document.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Document>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "le document demandé", response = Document.class),
+            @ApiResponse(code = 404, message = "le document n'existe pas", response = ErrorDefinition.class) })
+    @GetMapping(value = "/documents/{documentId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Document> documentsDocumentIdGet(@ApiParam(value = "identifiant du document",required=true) @PathVariable("documentId") String documentId) throws ApiException {
+            Document doc = documentService.findDocumentById(documentId);
+            return ResponseEntity
+                    .ok()
+                    .eTag("\"" + doc.getVersion() + "\"")
+                    .body(doc);
 
-        return new ResponseEntity<Document>(HttpStatus.NOT_IMPLEMENTED);
     }
-
-
-
-
 
 
 
     @ApiOperation(value = "mise à jour du document", nickname = "documentsDocumentIdPost", notes = "met à jour le document si l'utilisateur possède la dernière version et que personne n'a posé de verrou ", response = Document.class, tags={ "documents", })
-    public ResponseEntity<Document> documentsDocumentIdPost(@ApiParam(value = "identifiant du document",required=true) @PathVariable("documentId") String documentId,@ApiParam(value = "met à jour le texte, le titre, l'editeur et la date de mise à jour"  )  @Valid @RequestBody Document document) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<Document>(objectMapper.readValue("\"\"", Document.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Document>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "le document est mis à jour", response = Document.class),
+            @ApiResponse(code = 412, message = "il existe une version plus récente du document", response = Document.class)})
+    @RequestMapping(value = "/documents/{documentId}",method = RequestMethod.POST)
+    public ResponseEntity<Document> documentsDocumentIdPost(@RequestHeader(name = "If-Match", required = true) String requestIfMatch, @ApiParam(value = "identifiant du document",required=true) @PathVariable("documentId") String documentId, @ApiParam(value = "met à jour le texte, le titre, l'editeur et la date de mise à jour"  )  @RequestBody Document document) throws ApiException {
+        if (isEmpty(requestIfMatch)) {
+            return ResponseEntity.badRequest().build();
+        }else{
+            document.setVersion(requestIfMatch);
+            Document doc = documentService.updateDocument(document,documentId);
+            return ResponseEntity
+                    .ok()
+                    .eTag("\"" + doc.getVersion() + "\"")
+                    .body(doc);
         }
-
-        return new ResponseEntity<Document>(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @ApiOperation(value = "retourne tous les documents, pas de filtrage", nickname = "documentsGet", notes = "", response = DocumentsList.class, tags={ "documents", })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "la liste des documents", response = DocumentsList.class) })
+    @GetMapping(value = "/documents",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DocumentsList> documentsGet(@ApiParam(value = "numéro de la page à retourner") @Valid @RequestParam(value = "page", required = false) Integer page, @ApiParam(value = "nombre de documents par page") @Valid @RequestParam(value = "pageSize", required = false) Integer pageSize) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<DocumentsList>(objectMapper.readValue("\"\"", DocumentsList.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<DocumentsList>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<DocumentsList>(HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<DocumentsList>(documentService.findAll(page,pageSize), HttpStatus.OK);
     }
 
     @ApiOperation(value = "create a document", nickname = "documentsPost", notes = "", response = Document.class, tags={ "documents", })
-    public ResponseEntity<Document> documentsPost(@ApiParam(value = "" ,required=true )  @Valid @RequestBody Document document) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<Document>(objectMapper.readValue("\"\"", Document.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<Document>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<Document>(HttpStatus.NOT_IMPLEMENTED);
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "le document créé", response = Document.class),
+            @ApiResponse(code = 400, message = "le contenu n'est pas correct", response = ErrorDefinition.class) })
+    @RequestMapping(value = "/documents", method = RequestMethod.POST)
+    public ResponseEntity<Document> documentsPost(@ApiParam(value = "" ,required=true )  @RequestBody Document document) throws ApiException {
+        Document doc = documentService.save(document);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .eTag("\"" + doc.getVersion() + "\"")
+                .body(doc);
     }
 
 }
