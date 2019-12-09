@@ -1,20 +1,31 @@
 package esipe.fr.tpconcurrence.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
-
+import org.springframework.data.annotation.Id;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 
 @ApiModel(description = "un verrou")
 @org.springframework.data.mongodb.core.mapping.Document("Lock")
 public class Lock   {
 
+  @Id
+  @JsonIgnore
+  private String id;
+
+  @JsonIgnore
   private String lockId = null;
 
   private String owner = null;
 
   private LocalDateTime created = null;
+
+  public Lock(String lockId, String owner, LocalDateTime created) {
+    this.lockId = lockId;
+    this.owner = owner;
+    this.created = created;
+  }
 
   public String getOwner() {
     return owner;

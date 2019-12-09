@@ -8,4 +8,5 @@ import java.util.Optional;
 @Repository
 public interface DocumentRepository extends MongoRepository<Document,String> {
     public Optional<Document> findByDocumentId(String documentId);
+    public boolean existsByDocumentId(String documentId);
 }

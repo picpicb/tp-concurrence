@@ -40,6 +40,7 @@ public class DocumentsApiController {
     @ApiOperation(value = "mise à jour du document", nickname = "documentsDocumentIdPost", notes = "met à jour le document si l'utilisateur possède la dernière version et que personne n'a posé de verrou ", response = Document.class, tags={ "documents", })
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "le document est mis à jour", response = Document.class),
+            @ApiResponse(code = 409, message = "le document est verouillé par un autre éditeur", response = Document.class),
             @ApiResponse(code = 412, message = "il existe une version plus récente du document", response = Document.class)})
     @RequestMapping(value = "/documents/{documentId}",method = RequestMethod.POST)
     public ResponseEntity<Document> documentsDocumentIdPost(@RequestHeader(name = "If-Match", required = true) String requestIfMatch, @ApiParam(value = "identifiant du document",required=true) @PathVariable("documentId") String documentId, @ApiParam(value = "met à jour le texte, le titre, l'editeur et la date de mise à jour"  )  @RequestBody Document document) throws ApiException {
